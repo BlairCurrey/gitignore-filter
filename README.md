@@ -55,7 +55,7 @@ Yes, by a wide margin. Measured from a clean install of production dependencies 
 | glob 13.0.6 | | 7 | 6,334 kB |
 <!-- /size-table -->
 
-That's about a fifth of globby's packages and less than half its size. glob and fast-glob are shown for reference only: neither supports `.gitignore` at all. The two packages added on top of tinyglobby are this one (about 59 kB including this README) and `ignore` (about 121 kB, with no dependencies of its own). `ignore` is often already in a project's tree anyway: it has hundreds of millions of weekly downloads.
+That's about a fifth of globby's packages and less than half its size. glob and fast-glob are shown for reference only: neither has ever supported `.gitignore`. (The names are easy to mix up. **glob** is the original Node globbing library; **fast-glob** is a faster rewrite; **globby** is built on fast-glob and adds conveniences, including `gitignore: true`; **tinyglobby** is the lightweight replacement for fast-glob and globby, without that option.) The two packages added on top of tinyglobby are this one (about 59 kB including this README) and `ignore` (about 121 kB, with no dependencies of its own). `ignore` is often already in a project's tree anyway: it has hundreds of millions of weekly downloads.
 
 It's also faster. On a synthetic monorepo with about 25,000 files, most of them in `node_modules`, `dist` and `coverage` folders (`npm run bench`):
 
