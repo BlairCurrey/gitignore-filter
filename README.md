@@ -43,23 +43,23 @@ In short, `ignore` answers "do these rules match this path?" and `gitignore-filt
 
 ## Is tinyglobby + this still smaller than globby?
 
-Yes, by a wide margin. Measured from a clean install of production dependencies (`npm run size`):
+Yes, by a wide margin. Measured from a clean install of production dependencies (`pnpm size`):
 
 <!-- size-table -->
 
 | What you install                         | gitignore support | Packages | Size on disk |
 | ---------------------------------------- | :---------------: | -------: | -----------: |
 | globby 16.2.4                            |         ✓         |       24 |       773 kB |
-| **tinyglobby 0.2.17 + gitignore-filter** |         ✓         |    **5** |   **360 kB** |
+| **tinyglobby 0.2.17 + gitignore-filter** |         ✓         |    **5** |   **364 kB** |
 | tinyglobby 0.2.17 alone                  |                   |        3 |       183 kB |
 | fast-glob 3.3.3                          |                   |       18 |       513 kB |
 | glob 13.0.6                              |                   |        7 |     6,334 kB |
 
 <!-- /size-table -->
 
-That's about a fifth of globby's packages and less than half its size. glob and fast-glob are shown for reference only: neither has ever supported `.gitignore`. (The names are easy to mix up. **glob** is the original Node globbing library; **fast-glob** is a faster rewrite; **globby** is built on fast-glob and adds conveniences, including `gitignore: true`; **tinyglobby** is the lightweight replacement for fast-glob and globby, without that option.) The two packages added on top of tinyglobby are this one (about 59 kB including this README) and `ignore` (about 121 kB, with no dependencies of its own). `ignore` is often already in a project's tree anyway: it has hundreds of millions of weekly downloads.
+That's about a fifth of globby's packages and less than half its size. glob and fast-glob are shown for reference only: neither has ever supported `.gitignore`. (The names are easy to mix up. **glob** is the original Node globbing library; **fast-glob** is a faster rewrite; **globby** is built on fast-glob and adds conveniences, including `gitignore: true`; **tinyglobby** is the lightweight replacement for fast-glob and globby, without that option.) The two packages added on top of tinyglobby are this one (about 63 kB including this README) and `ignore` (about 121 kB, with no dependencies of its own). `ignore` is often already in a project's tree anyway: it has hundreds of millions of weekly downloads.
 
-It's also faster. On a synthetic monorepo with about 25,000 files, most of them in `node_modules`, `dist` and `coverage` folders (`npm run bench`):
+It's also faster. On a synthetic monorepo with about 25,000 files, most of them in `node_modules`, `dist` and `coverage` folders (`pnpm bench`):
 
 <!-- bench-table -->
 
@@ -209,9 +209,9 @@ The test suite never checks answers against a hand-written expectation of how gi
 On top of hand-written scenarios, a randomized test generates hundreds of repositories with random folders and random ignore files and compares each against git. Runs are reproducible from a seed. CI runs everything on Linux, macOS and Windows across Node 20, 22 and 24, plus a weekly run of 5,000 random repositories with a fresh seed.
 
 ```sh
-npm test                                   # everything, 300 random repositories
-FUZZ_RUNS=5000 npm run test:only           # more random repositories
-FUZZ_SEED=12345 FUZZ_RUNS=1 npm run test:only  # reproduce one case
+pnpm test                                  # everything, 300 random repositories
+FUZZ_RUNS=5000 pnpm test:only              # more random repositories
+FUZZ_SEED=12345 FUZZ_RUNS=1 pnpm test:only  # reproduce one case
 ```
 
 ## Limits

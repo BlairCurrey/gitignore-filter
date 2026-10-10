@@ -2,8 +2,8 @@
 // ignore files, and require the package to agree with git on every file.
 //
 // Runs are reproducible from the seed. To reproduce a failure:
-//   FUZZ_SEED=<seed printed in the failure> FUZZ_RUNS=1 npm run test:only
-// To run more cases locally: FUZZ_RUNS=2000 npm run test:only
+//   FUZZ_SEED=<seed printed in the failure> FUZZ_RUNS=1 pnpm test:only
+// To run more cases locally: FUZZ_RUNS=2000 pnpm test:only
 import { describe, it } from 'node:test'
 import { assertMatchesGit, makeTree, rng } from './helpers.mjs'
 

@@ -1,6 +1,7 @@
 // Measures what each option actually installs: number of packages and total
 // size on disk of node_modules, from a clean install of production
-// dependencies only. Reproduce with `npm run size`.
+// dependencies only. Reproduce with `pnpm size`. Installs use npm on purpose: it is what most
+// users install with, and its flat node_modules is easy to measure.
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readdirSync, rmSync, statSync, writeFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'

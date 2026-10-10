@@ -1,5 +1,5 @@
 // Speed benchmark on a synthetic monorepo, plus a correctness check of each
-// approach against `git ls-files`. Reproduce with `npm run bench`.
+// approach against `git ls-files`. Reproduce with `pnpm bench`.
 import { execFileSync, execSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

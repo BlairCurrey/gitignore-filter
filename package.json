@@ -21,6 +21,7 @@
   },
   "type": "module",
   "sideEffects": false,
+  "packageManager": "pnpm@10.29.3",
   "engines": {
     "node": ">=20"
   },
@@ -63,11 +64,11 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc",
-    "test": "npm run build && node --test --test-reporter=spec \"test/**/*.test.mjs\"",
+    "test": "pnpm run build && node --test --test-reporter=spec \"test/**/*.test.mjs\"",
     "test:only": "node --test --test-reporter=spec \"test/**/*.test.mjs\"",
-    "bench": "npm run build && node bench/bench.mjs",
+    "bench": "pnpm run build && node bench/bench.mjs",
     "size": "node bench/size.mjs",
-    "prepublishOnly": "npm run typecheck && npm test"
+    "prepublishOnly": "pnpm run typecheck && pnpm test"
   },
   "dependencies": {
     "ignore": "^7.0.12"
