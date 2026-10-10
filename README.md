@@ -7,9 +7,21 @@ Respect `.gitignore` files exactly the way git does: with [tinyglobby](https://g
 It also handles other ignore files that use gitignore syntax, such as `.prettierignore` and `.eslintignore`.
 
 ```js
+import { glob } from "tinyglobby";
+import { createGitignoreFilter } from "gitignore-filter";
+
+const files = await glob("**/*.ts", {
+  cwd,
+  fs: createGitignoreFilter({ cwd }).createFs(),
+});
+```
+
+Or, with a little sugar:
+
+```js
 import { glob } from "gitignore-filter/tinyglobby";
 
-const files = await glob("**/*.ts", { cwd }); // .gitignore respected, like globby's gitignore: true
+const files = await glob("**/*.ts", { cwd }); // gitignore: true by default, like globby's option
 ```
 
 ## Why this exists
@@ -89,23 +101,37 @@ It's as fast as tinyglobby with no gitignore support because ignored folders are
 npm install gitignore-filter
 ```
 
-For the tinyglobby helper, also install `tinyglobby` (an optional peer dependency). Requires Node.js 20 or later.
+To use it with tinyglobby, install `tinyglobby` too (an optional peer dependency). Requires Node.js 20 or later.
 
 ## Usage
 
-### With tinyglobby (migrating from globby)
+### With tinyglobby
 
-`gitignore-filter/tinyglobby` exports tinyglobby's `glob` and `globSync` with globby's `gitignore` and `ignoreFiles` options added. `gitignore` defaults to `true`:
+Pass `createFs()` as tinyglobby's `fs` option. It drops ignored entries as each folder is read, so ignored folders are never crawled, and every tinyglobby option works as usual.
+
+```js
+import { glob } from "tinyglobby";
+import { createGitignoreFilter } from "gitignore-filter";
+
+const filter = createGitignoreFilter({ cwd });
+const files = await glob("**/*.ts", { cwd, fs: filter.createFs() });
+```
+
+If you already pass your own `fs`, give it to `createFs(yourFs)` and it will be wrapped instead of replaced.
+
+### Migrating from globby
+
+`gitignore-filter/tinyglobby` is the same thing with less typing: it exports tinyglobby's `glob` and `globSync` with globby's `gitignore` and `ignoreFiles` options added. `gitignore` defaults to `true`:
 
 ```diff
 - import { globby } from 'globby'
 + import { glob } from 'gitignore-filter/tinyglobby'
 
-- const files = await globby('src/**/*.vue', { cwd, gitignore: true })
-+ const files = await glob('src/**/*.vue', { cwd })
+- const files = await globby('src/**/*.ts', { cwd, gitignore: true })
++ const files = await glob('src/**/*.ts', { cwd })
 ```
 
-All tinyglobby options work as usual. Ignored folders are skipped while crawling, not filtered afterwards.
+All tinyglobby options work as usual.
 
 ```js
 import { glob, globSync } from "gitignore-filter/tinyglobby";
@@ -123,7 +149,7 @@ globSync({
 });
 ```
 
-Migrating from tinyglobby's `git ls-files` workaround? Delete the helper and import `glob` from here instead.
+Migrating from tinyglobby's `git ls-files` workaround? Delete the helper and use either form above.
 
 ### Checking paths directly
 
@@ -142,9 +168,9 @@ filter.filter(["src/a.ts", "dist/a.js", "README.md"]); // ['src/a.ts', 'README.m
 
 Relative paths are resolved from `cwd`; absolute paths and `file:` URLs work too. If you don't say whether a path is a directory and the answer depends on it (`build/` only matches directories), the path is checked on disk once.
 
-### With your own tinyglobby `fs` option, or fdir
+### With fdir
 
-`createFs()` returns a drop-in for the `fs` option of tinyglobby and fdir. It drops ignored entries as each folder is read, so ignored folders are never crawled. Pass your own `fs` to wrap it.
+`createFs()` works as fdir's `fs` option too.
 
 ```js
 import { fdir } from "fdir";
