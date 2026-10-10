@@ -1,7 +1,7 @@
 // API behavior: options, path forms, and the integrations.
 import { describe, it } from 'node:test'
 import { createRequire } from 'node:module'
-import { globSync as fsGlobSync, symlinkSync } from 'node:fs'
+import * as fs from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import assert from 'node:assert/strict'
@@ -10,6 +10,9 @@ import { glob as tinyGlob, globSync as tinyGlobSync } from 'tinyglobby'
 import { createGitignoreFilter, rebasePatterns } from '../dist/index.mjs'
 import { glob, globSync } from '../dist/tinyglobby.mjs'
 import { isWindows, makeTree } from './helpers.mjs'
+
+// fs.globSync only exists on Node 22+; read it off the module so Node 20 can still load this file.
+const { globSync: fsGlobSync, symlinkSync } = fs
 
 const fixture = () =>
   makeTree({

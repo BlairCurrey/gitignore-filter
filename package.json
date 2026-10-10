@@ -64,8 +64,8 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc",
-    "test": "pnpm run build && node --test --test-reporter=spec \"test/**/*.test.mjs\"",
-    "test:only": "node --test --test-reporter=spec \"test/**/*.test.mjs\"",
+    "test": "pnpm run build && node --test --test-reporter=spec test/api.test.mjs test/git-parity.test.mjs test/randomized.test.mjs",
+    "test:only": "node --test --test-reporter=spec test/api.test.mjs test/git-parity.test.mjs test/randomized.test.mjs",
     "bench": "pnpm run build && node bench/bench.mjs",
     "size": "node bench/size.mjs",
     "prepublishOnly": "pnpm run typecheck && pnpm test"
