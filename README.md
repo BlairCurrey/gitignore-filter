@@ -1,5 +1,7 @@
 # gitignore-filter
 
+[![npm](https://img.shields.io/npm/v/gitignore-filter)](https://www.npmjs.com/package/gitignore-filter) [![CI](https://github.com/BlairCurrey/gitignore-filter/actions/workflows/ci.yml/badge.svg)](https://github.com/BlairCurrey/gitignore-filter/actions/workflows/ci.yml)
+
 Respect `.gitignore` files exactly the way git does: with [tinyglobby](https://github.com/SuperchupuDev/tinyglobby), [fdir](https://github.com/thecodrr/fdir), Node's built-in `fs.glob`, or any list of paths. Every answer is tested against git itself.
 
 It also handles other ignore files that use gitignore syntax, such as `.prettierignore` and `.eslintignore`.
