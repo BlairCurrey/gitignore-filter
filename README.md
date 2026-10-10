@@ -5,9 +5,9 @@ Respect `.gitignore` files exactly the way git does: with [tinyglobby](https://g
 It also handles other ignore files that use gitignore syntax, such as `.prettierignore` and `.eslintignore`.
 
 ```js
-import { glob } from 'gitignore-filter/tinyglobby'
+import { glob } from "gitignore-filter/tinyglobby";
 
-const files = await glob('**/*.ts', { cwd })   // .gitignore respected, like globby's gitignore: true
+const files = await glob("**/*.ts", { cwd }); // .gitignore respected, like globby's gitignore: true
 ```
 
 ## Why this exists
@@ -16,28 +16,28 @@ const files = await glob('**/*.ts', { cwd })   // .gitignore respected, like glo
 
 - **Stay on globby** and keep its 24 installed packages.
 - **Shell out to `git ls-files`**, the [documented workaround](https://superchupu.dev/tinyglobby/migration#gitignore). That needs git installed and a `.git` folder present, so it breaks in Docker build contexts, unpacked tarballs and some CI checkouts.
-- **Write your own `.gitignore` handling**, which is harder than it looks: subfolder scoping, anchored patterns and re-includes are where hand-rolled versions keep breaking.
+- **Write your own `.gitignore` handling**, which is harder than it looks (subfolder scoping, anchored patterns, re-includes, etc.).
 - **Drop the feature**, as several tools have, and let users trip over generated files, build output and secrets that suddenly show up.
 
-`gitignore-filter` is that missing piece, kept separate so tinyglobby can stay tiny ([tinyglobby#92](https://github.com/SuperchupuDev/tinyglobby/issues/92)).
+`gitignore-filter` is that missing piece and let's `tinyglobby` stay tiny ([tinyglobby#92](https://github.com/SuperchupuDev/tinyglobby/issues/92)).
 
 ## What does this add over the `ignore` package?
 
 [`ignore`](https://github.com/kaelzhang/node-ignore) is the rule engine: give it gitignore rules and it tells you whether a path matches them. This package uses it, and does everything around it that git does and `ignore` leaves to you:
 
-| | `ignore` | `gitignore-filter` |
-| --- | :---: | :---: |
-| Matches a path against gitignore rules | ✓ | ✓ (via `ignore`) |
-| Finds every `.gitignore` in the tree, root and subfolders | | ✓ |
-| Scopes each file's rules to its own folder (`/build` in `src/.gitignore` means `src/build`) | | ✓ |
-| Lets deeper files override shallower ones, in git's precedence order | | ✓ |
-| Reads `.git/info/exclude` and the global gitignore (`core.excludesFile`) | | ✓ |
-| Reads `core.ignorecase`, so matching is case-insensitive where git's is | | ✓ |
-| Stops at repository boundaries; nested repos and submodules keep their own rules | | ✓ |
-| Knows which paths are folders, so `build/` only matches directories | | ✓ |
-| Skips ignored folders while crawling instead of filtering afterwards | | ✓ |
-| Works the same with `.prettierignore`, `.eslintignore` and other gitignore-style files | | ✓ |
-| Checked against `git` on hundreds of generated repositories on every CI run | | ✓ |
+|                                                                                             | `ignore` | `gitignore-filter` |
+| ------------------------------------------------------------------------------------------- | :------: | :----------------: |
+| Matches a path against gitignore rules                                                      |    ✓     |  ✓ (via `ignore`)  |
+| Finds every `.gitignore` in the tree, root and subfolders                                   |          |         ✓          |
+| Scopes each file's rules to its own folder (`/build` in `src/.gitignore` means `src/build`) |          |         ✓          |
+| Lets deeper files override shallower ones, in git's precedence order                        |          |         ✓          |
+| Reads `.git/info/exclude` and the global gitignore (`core.excludesFile`)                    |          |         ✓          |
+| Reads `core.ignorecase`, so matching is case-insensitive where git's is                     |          |         ✓          |
+| Stops at repository boundaries; nested repos and submodules keep their own rules            |          |         ✓          |
+| Knows which paths are folders, so `build/` only matches directories                         |          |         ✓          |
+| Skips ignored folders while crawling instead of filtering afterwards                        |          |         ✓          |
+| Works the same with `.prettierignore`, `.eslintignore` and other gitignore-style files      |          |         ✓          |
+| Checked against `git` on hundreds of generated repositories on every CI run                 |          |         ✓          |
 
 In short, `ignore` answers "do these rules match this path?" and `gitignore-filter` answers "would git ignore this file in this project?"
 
@@ -46,13 +46,15 @@ In short, `ignore` answers "do these rules match this path?" and `gitignore-filt
 Yes, by a wide margin. Measured from a clean install of production dependencies (`npm run size`):
 
 <!-- size-table -->
-| What you install | gitignore support | Packages | Size on disk |
-| --- | :---: | ---: | ---: |
-| globby 16.2.4 | ✓ | 24 | 773 kB |
-| **tinyglobby 0.2.17 + gitignore-filter** | ✓ | **5** | **360 kB** |
-| tinyglobby 0.2.17 alone | | 3 | 183 kB |
-| fast-glob 3.3.3 | | 18 | 513 kB |
-| glob 13.0.6 | | 7 | 6,334 kB |
+
+| What you install                         | gitignore support | Packages | Size on disk |
+| ---------------------------------------- | :---------------: | -------: | -----------: |
+| globby 16.2.4                            |         ✓         |       24 |       773 kB |
+| **tinyglobby 0.2.17 + gitignore-filter** |         ✓         |    **5** |   **360 kB** |
+| tinyglobby 0.2.17 alone                  |                   |        3 |       183 kB |
+| fast-glob 3.3.3                          |                   |       18 |       513 kB |
+| glob 13.0.6                              |                   |        7 |     6,334 kB |
+
 <!-- /size-table -->
 
 That's about a fifth of globby's packages and less than half its size. glob and fast-glob are shown for reference only: neither has ever supported `.gitignore`. (The names are easy to mix up. **glob** is the original Node globbing library; **fast-glob** is a faster rewrite; **globby** is built on fast-glob and adds conveniences, including `gitignore: true`; **tinyglobby** is the lightweight replacement for fast-glob and globby, without that option.) The two packages added on top of tinyglobby are this one (about 59 kB including this README) and `ignore` (about 121 kB, with no dependencies of its own). `ignore` is often already in a project's tree anyway: it has hundreds of millions of weekly downloads.
@@ -60,13 +62,24 @@ That's about a fifth of globby's packages and less than half its size. glob and 
 It's also faster. On a synthetic monorepo with about 25,000 files, most of them in `node_modules`, `dist` and `coverage` folders (`npm run bench`):
 
 <!-- bench-table -->
-| Approach | Median time | Matches git |
-| --- | ---: | :---: |
-| globby `{ gitignore: true }` | 416 ms | ✓ |
-| tinyglobby + documented `git ls-files` workaround | 163 ms | ✓ |
-| **tinyglobby + gitignore-filter** | **69 ms** | ✓ |
-| tinyglobby with no gitignore support (baseline) | 39 ms | returns 24,951 files instead of 5,151 |
+
+| Approach                                          | Median time |              Matches git              |
+| ------------------------------------------------- | ----------: | :-----------------------------------: |
+| globby `{ gitignore: true }`                      |      122 ms |                   ✓                   |
+| tinyglobby + documented `git ls-files` workaround |      100 ms |                   ✓                   |
+| **tinyglobby + gitignore-filter**                 |   **28 ms** |                   ✓                   |
+| tinyglobby with no gitignore support (baseline)   |       28 ms | returns 24,951 files instead of 5,151 |
+
 <!-- /bench-table -->
+
+Measured on an Apple M2 Max, Node 24.21, median of 15 runs. Your numbers will differ; the ordering was the same on Linux and macOS.
+
+tinyglobby + gitignore-filter is so much faster than globby because:
+
+1. **It crawls once.** globby crawls the tree once just to find the `.gitignore` files, then again to glob. gitignore-filter reads each folder's `.gitignore` when the crawl reaches that folder.
+2. **It doesn't `stat` every result.** globby calls `stat` on each result (about 5,000 here) to check whether it's a folder. The directory listing already says which entries are folders, so gitignore-filter doesn't need to.
+
+It's as fast as tinyglobby with no gitignore support because ignored folders are never opened: the crawl opens about 300 directories instead of about 1,600, which saves about as much time as checking the rules costs.
 
 ## Install
 
@@ -93,10 +106,19 @@ For the tinyglobby helper, also install `tinyglobby` (an optional peer dependenc
 All tinyglobby options work as usual. Ignored folders are skipped while crawling, not filtered afterwards.
 
 ```js
-import { glob, globSync } from 'gitignore-filter/tinyglobby'
+import { glob, globSync } from "gitignore-filter/tinyglobby";
 
-await glob(['**/*.js', '!**/*.test.js'], { cwd, ignoreFiles: ['.prettierignore'] })
-globSync({ patterns: ['**/*'], cwd, dot: true, gitignore: false, ignoreFiles: '.eslintignore' })
+await glob(["**/*.js", "!**/*.test.js"], {
+  cwd,
+  ignoreFiles: [".prettierignore"],
+});
+globSync({
+  patterns: ["**/*"],
+  cwd,
+  dot: true,
+  gitignore: false,
+  ignoreFiles: ".eslintignore",
+});
 ```
 
 Migrating from tinyglobby's `git ls-files` workaround? Delete the helper and import `glob` from here instead.
@@ -104,16 +126,16 @@ Migrating from tinyglobby's `git ls-files` workaround? Delete the helper and imp
 ### Checking paths directly
 
 ```js
-import { createGitignoreFilter } from 'gitignore-filter'
+import { createGitignoreFilter } from "gitignore-filter";
 
-const filter = createGitignoreFilter({ cwd })
+const filter = createGitignoreFilter({ cwd });
 
-filter.isIgnored('dist/app.js')        // true
-filter.isIgnored('src/index.ts')       // false
-filter.isIgnored('build', true)        // pass true when you know it's a directory
-filter.isIgnored('build/')             // or end the path with /
+filter.isIgnored("dist/app.js"); // true
+filter.isIgnored("src/index.ts"); // false
+filter.isIgnored("build", true); // pass true when you know it's a directory
+filter.isIgnored("build/"); // or end the path with /
 
-filter.filter(['src/a.ts', 'dist/a.js', 'README.md'])  // ['src/a.ts', 'README.md']
+filter.filter(["src/a.ts", "dist/a.js", "README.md"]); // ['src/a.ts', 'README.md']
 ```
 
 Relative paths are resolved from `cwd`; absolute paths and `file:` URLs work too. If you don't say whether a path is a directory and the answer depends on it (`build/` only matches directories), the path is checked on disk once.
@@ -123,14 +145,17 @@ Relative paths are resolved from `cwd`; absolute paths and `file:` URLs work too
 `createFs()` returns a drop-in for the `fs` option of tinyglobby and fdir. It drops ignored entries as each folder is read, so ignored folders are never crawled. Pass your own `fs` to wrap it.
 
 ```js
-import { fdir } from 'fdir'
-import { createGitignoreFilter } from 'gitignore-filter'
+import { fdir } from "fdir";
+import { createGitignoreFilter } from "gitignore-filter";
 
-const filter = createGitignoreFilter({ cwd })
-const files = new fdir({ fs: filter.createFs() }).withRelativePaths().crawl(cwd).sync()
+const filter = createGitignoreFilter({ cwd });
+const files = new fdir({ fs: filter.createFs() })
+  .withRelativePaths()
+  .crawl(cwd)
+  .sync();
 
 // Or only prune directories:
-new fdir().exclude(filter.fdirExclude).crawl(cwd).sync()
+new fdir().exclude(filter.fdirExclude).crawl(cwd).sync();
 ```
 
 ### With Node's `fs.glob`
@@ -138,26 +163,30 @@ new fdir().exclude(filter.fdirExclude).crawl(cwd).sync()
 Use `withFileTypes: true`. In string mode Node sometimes passes only a base name to `exclude`, which can't be located reliably.
 
 ```js
-import { globSync } from 'node:fs'
+import { globSync } from "node:fs";
 
-const filter = createGitignoreFilter({ cwd })
-const files = globSync('**/*', { cwd, withFileTypes: true, exclude: filter.fsGlobExclude })
+const filter = createGitignoreFilter({ cwd });
+const files = globSync("**/*", {
+  cwd,
+  withFileTypes: true,
+  exclude: filter.fsGlobExclude,
+})
   // Node's fs.glob can still return a few files that `exclude` rejected
   // (nodejs/node#63049); this line makes the result exact until that's fixed.
-  .filter((entry) => !filter.fsGlobExclude(entry))
+  .filter((entry) => !filter.fsGlobExclude(entry));
 ```
 
 ## Options
 
 `createGitignoreFilter(options)` and the tinyglobby helper accept:
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `cwd` | `process.cwd()` | Where relative paths are resolved from, and where the search for the repository starts. |
-| `gitignore` | `true` | Respect `.gitignore` files, `.git/info/exclude` and the global excludes file. |
-| `ignoreFiles` | none | Extra gitignore-syntax files to respect, by name: `'.prettierignore'` or `['.prettierignore', '.eslintignore']`. globby-style `'**/.prettierignore'` is accepted too. They're found and scoped exactly like `.gitignore`, and layered on top of it. |
-| `globalGitignore` | `true` | Respect the user's global excludes file, as git does. Set it to `false` for results that don't depend on the machine. |
-| `ignoreCase` | repo setting | Match case-insensitively. Defaults to the repository's `core.ignorecase`, which git sets to `true` on macOS and Windows. |
+| Option            | Default         | Description                                                                                                                                                                                                                                         |
+| ----------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cwd`             | `process.cwd()` | Where relative paths are resolved from, and where the search for the repository starts.                                                                                                                                                             |
+| `gitignore`       | `true`          | Respect `.gitignore` files, `.git/info/exclude` and the global excludes file.                                                                                                                                                                       |
+| `ignoreFiles`     | none            | Extra gitignore-syntax files to respect, by name: `'.prettierignore'` or `['.prettierignore', '.eslintignore']`. globby-style `'**/.prettierignore'` is accepted too. They're found and scoped exactly like `.gitignore`, and layered on top of it. |
+| `globalGitignore` | `true`          | Respect the user's global excludes file, as git does. Set it to `false` for results that don't depend on the machine.                                                                                                                               |
+| `ignoreCase`      | repo setting    | Match case-insensitively. Defaults to the repository's `core.ignorecase`, which git sets to `true` on macOS and Windows.                                                                                                                            |
 
 ## How it decides
 
