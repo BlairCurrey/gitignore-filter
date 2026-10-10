@@ -1,6 +1,6 @@
 {
   "name": "gitignore-filter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Respect .gitignore (and .prettierignore, etc.) exactly like git does, with tinyglobby, fdir or fs.glob. Tested against git itself.",
   "keywords": [
     "gitignore",
