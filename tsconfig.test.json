@@ -1,0 +1,8 @@
+{
+  // Tests and benchmarks import the built files in dist/, so build before checking these.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true
+  },
+  "include": ["test", "bench"]
+}

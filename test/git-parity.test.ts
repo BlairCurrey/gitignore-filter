@@ -14,7 +14,7 @@ import {
   resetGlobalConfig,
   writeFiles,
   xdgIgnorePath,
-} from './helpers.mjs'
+} from './helpers.ts'
 
 const scenarios = {
   'basic globs and negation': {

@@ -63,12 +63,12 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc",
-    "test": "pnpm run build && node --test --test-reporter=spec test/api.test.mjs test/git-parity.test.mjs test/randomized.test.mjs",
-    "test:only": "node --test --test-reporter=spec test/api.test.mjs test/git-parity.test.mjs test/randomized.test.mjs",
-    "bench": "pnpm run build && node bench/bench.mjs",
-    "size": "node bench/size.mjs",
-    "prepublishOnly": "pnpm run typecheck && pnpm test"
+    "typecheck": "tsc && tsc -p tsconfig.test.json",
+    "test": "pnpm run build && pnpm run test:only",
+    "test:only": "node --import tsx --test --test-reporter=spec test/api.test.ts test/git-parity.test.ts test/randomized.test.ts",
+    "bench": "pnpm run build && node --import tsx bench/bench.ts",
+    "size": "node --import tsx bench/size.ts",
+    "prepublishOnly": "pnpm run build && pnpm run typecheck && pnpm run test:only"
   },
   "dependencies": {
     "ignore": "^7.0.12"
@@ -87,6 +87,7 @@
     "globby": "^16.2.4",
     "tinyglobby": "^0.2.17",
     "tsdown": "^0.23.0",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
 }

@@ -9,7 +9,7 @@ import { fdir } from 'fdir'
 import { glob as tinyGlob, globSync as tinyGlobSync } from 'tinyglobby'
 import { createGitignoreFilter, rebasePatterns } from '../dist/index.mjs'
 import { glob, globSync } from '../dist/tinyglobby.mjs'
-import { isWindows, makeTree } from './helpers.mjs'
+import { isWindows, makeTree } from './helpers.ts'
 
 // fs.globSync only exists on Node 22+; read it off the module so Node 20 can still load this file.
 const { globSync: fsGlobSync, symlinkSync } = fs
@@ -137,7 +137,7 @@ describe('tinyglobby helper (gitignore-filter/tinyglobby)', () => {
 
   it('prunes ignored directories instead of crawling them', () => {
     const root = fixture()
-    const read = []
+    const read: string[] = []
     const f = createGitignoreFilter({ cwd: root })
     const fs = f.createFs({
       readdirSync: (path, opts) => {
@@ -180,7 +180,7 @@ describe('Node fs.glob integration', () => {
   it('fsGlobExclude with withFileTypes', { skip: typeof fsGlobSync !== 'function' }, () => {
     const root = fixture()
     const f = createGitignoreFilter({ cwd: root })
-    const rel = (d) => join(d.parentPath, d.name).slice(root.length + 1).split('\\').join('/')
+    const rel = (d: fs.Dirent) => join(d.parentPath, d.name).slice(root.length + 1).split('\\').join('/')
     const raw = fsGlobSync('**/*', { cwd: root, withFileTypes: true, exclude: f.fsGlobExclude })
 
     // Ignored directories are pruned: nothing from inside them is returned.
@@ -195,6 +195,7 @@ describe('Node fs.glob integration', () => {
 
   it('fsGlobExclude explains itself when given strings', () => {
     const f = createGitignoreFilter()
+    // @ts-expect-error: deliberately the wrong argument type, as string-mode fs.glob would pass
     assert.throws(() => f.fsGlobExclude('a'), /withFileTypes/)
   })
 })

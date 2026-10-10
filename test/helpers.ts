@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os'
 import { dirname, join, relative, sep } from 'node:path'
 import assert from 'node:assert/strict'
-import { createGitignoreFilter } from '../dist/index.mjs'
+import { createGitignoreFilter, type GitignoreFilterOptions } from '../dist/index.mjs'
 import { globSync } from '../dist/tinyglobby.mjs'
 
 export const isWindows = process.platform === 'win32'
@@ -33,12 +33,12 @@ export function resetGlobalConfig() {
   rmSync(xdgIgnorePath, { force: true })
 }
 
-const tempRoots = []
+const tempRoots: string[] = []
 process.on('exit', () => {
   for (const dir of [...tempRoots, sandbox]) rmSync(dir, { recursive: true, force: true })
 })
 
-export function git(cwd, args, input) {
+export function git(cwd: string, args: string[], input?: string): string {
   const result = spawnSync('git', ['-c', 'core.quotepath=off', ...args], {
     cwd,
     input,
@@ -52,7 +52,9 @@ export function git(cwd, args, input) {
 }
 
 /** Create a directory tree from `{ 'path/to/file': 'contents' }`. Optionally `git init` it. */
-export function makeTree(files, { init = true } = {}) {
+export type Files = Record<string, string>
+
+export function makeTree(files: Files, { init = true } = {}): string {
   const root = mkdtempSync(join(tmpdir(), 'gitignore-filter-'))
   tempRoots.push(root)
   writeFiles(root, files)
@@ -60,7 +62,7 @@ export function makeTree(files, { init = true } = {}) {
   return root
 }
 
-export function writeFiles(root, files) {
+export function writeFiles(root: string, files: Files): void {
   for (const [path, content] of Object.entries(files)) {
     const full = join(root, path)
     mkdirSync(dirname(full), { recursive: true })
@@ -69,7 +71,7 @@ export function writeFiles(root, files) {
 }
 
 /** Every file under `root` (posix, relative), skipping `.git` directories. */
-export function listFiles(root, dir = root, out = []) {
+export function listFiles(root: string, dir = root, out: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === '.git') continue
     const full = join(dir, entry.name)
@@ -80,7 +82,7 @@ export function listFiles(root, dir = root, out = []) {
 }
 
 /** Every directory under `root` (posix, relative), skipping `.git`. */
-export function listDirs(root, dir = root, out = []) {
+export function listDirs(root: string, dir = root, out: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === '.git' || !entry.isDirectory()) continue
     const full = join(dir, entry.name)
@@ -90,17 +92,17 @@ export function listDirs(root, dir = root, out = []) {
   return out.sort()
 }
 
-function nulList(text) {
+function nulList(text: string): string[] {
   return text.split('\0').filter(Boolean)
 }
 
 /** Files git reports as ignored (untracked + ignored, fully expanded). */
-export function gitIgnored(root) {
+export function gitIgnored(root: string): Set<string> {
   return new Set(nulList(git(root, ['ls-files', '-z', '--others', '--ignored', '--exclude-standard'])))
 }
 
 /** Files git reports as untracked and not ignored. */
-export function gitVisible(root) {
+export function gitVisible(root: string): Set<string> {
   return new Set(nulList(git(root, ['ls-files', '-z', '--others', '--exclude-standard'])))
 }
 
@@ -110,13 +112,16 @@ export function gitVisible(root) {
  * directory the package calls ignored really has all its files ignored by git
  * (which is what makes pruning safe).
  */
-export function assertMatchesGit(root, { label = '', filterOptions = {} } = {}) {
+export function assertMatchesGit(
+  root: string,
+  { label = '', filterOptions = {} }: { label?: string; filterOptions?: GitignoreFilterOptions } = {},
+): void {
   const ignored = gitIgnored(root)
   const visible = gitVisible(root)
   const filter = createGitignoreFilter({ cwd: root, ...filterOptions })
   const files = listFiles(root)
 
-  const mismatches = []
+  const mismatches: string[] = []
   for (const file of files) {
     const expected = ignored.has(file)
     if (!expected && !visible.has(file)) continue // tracked files: git lists neither
@@ -136,7 +141,7 @@ export function assertMatchesGit(root, { label = '', filterOptions = {} } = {}) 
 }
 
 /** Deterministic PRNG (mulberry32) so randomized tests are reproducible from a seed. */
-export function rng(seed) {
+export function rng(seed: number) {
   let a = seed >>> 0
   const next = () => {
     a = (a + 0x6d2b79f5) >>> 0
@@ -147,8 +152,8 @@ export function rng(seed) {
   }
   return {
     next,
-    int: (n) => Math.floor(next() * n),
-    pick: (list) => list[Math.floor(next() * list.length)],
-    chance: (p) => next() < p,
+    int: (n: number) => Math.floor(next() * n),
+    pick: <T>(list: readonly T[]): T => list[Math.floor(next() * list.length)]!,
+    chance: (p: number) => next() < p,
   }
 }

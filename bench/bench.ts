@@ -6,13 +6,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { globby } from 'globby'
-import { glob as tinyGlob, escapePath } from 'tinyglobby'
+import { glob as tinyGlob, escapePath, type GlobOptions } from 'tinyglobby'
 import { glob as gitignoreGlob } from '../dist/tinyglobby.mjs'
 
 const RUNS = Number(process.env.BENCH_RUNS ?? 7)
 const root = mkdtempSync(join(tmpdir(), 'gitignore-filter-bench-'))
 
-function file(path, content = '') {
+function file(path: string, content = ''): void {
   const full = join(root, path)
   mkdirSync(join(full, '..'), { recursive: true })
   writeFileSync(full, content)
@@ -41,7 +41,7 @@ const totalFiles = execFileSync('git', ['ls-files', '-z', '--others'], { cwd: ro
   .split('\0').filter(Boolean).length
 
 // tinyglobby's documented workaround (superchupu.dev/tinyglobby/migration#gitignore)
-async function tinyglobbyGitWorkaround(patterns, options) {
+async function tinyglobbyGitWorkaround(patterns: string, options: GlobOptions & { cwd: string }): Promise<string[]> {
   const { cwd, ...rest } = options
   const gitIgnored = execSync('git ls-files --others --ignored --exclude-standard --directory', {
     cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 28,
@@ -49,19 +49,19 @@ async function tinyglobbyGitWorkaround(patterns, options) {
   return tinyGlob(patterns, { ...rest, cwd, ignore: [...(rest.ignore || []), ...gitIgnored] })
 }
 
-const contenders = [
+const contenders: [label: string, run: () => Promise<string[]>][] = [
   ['tinyglobby, no gitignore support (baseline)', () => tinyGlob('**/*', { cwd: root, dot: true, ignore: ['.git/**'] })],
   ['globby { gitignore: true }', () => globby('**/*', { cwd: root, dot: true, gitignore: true, ignore: ['.git/**'] })],
   ['tinyglobby + documented `git ls-files` workaround', () => tinyglobbyGitWorkaround('**/*', { cwd: root, dot: true, ignore: ['.git/**'] })],
   ['tinyglobby + gitignore-filter', () => gitignoreGlob('**/*', { cwd: root, dot: true })],
 ]
 
-const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]
+const median = (xs: number[]): number => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!
 const rows = []
 for (const [label, run] of contenders) {
   await run() // warm up
   const times = []
-  let result
+  let result: string[] = []
   for (let i = 0; i < RUNS; i++) {
     const t = performance.now()
     result = await run()

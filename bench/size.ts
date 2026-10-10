@@ -11,9 +11,9 @@ const root = resolve(import.meta.dirname, '..')
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
 // Pack this package so it is measured exactly as it would be published.
-const tarball = join(root, execFileSync(npm, ['pack', '--silent'], { cwd: root, encoding: 'utf8' }).trim().split('\n').pop())
+const tarball = join(root, execFileSync(npm, ['pack', '--silent'], { cwd: root, encoding: 'utf8' }).trim().split('\n').pop()!)
 
-const scenarios = [
+const scenarios: [label: string, specs: string[]][] = [
   ['globby', ['globby']],
   ['glob', ['glob']],
   ['fast-glob', ['fast-glob']],
@@ -21,7 +21,7 @@ const scenarios = [
   ['tinyglobby + gitignore-filter', ['tinyglobby', tarball]],
 ]
 
-function walk(dir) {
+function walk(dir: string): number {
   let bytes = 0
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name)
@@ -31,7 +31,7 @@ function walk(dir) {
   return bytes
 }
 
-function countPackages(nodeModules) {
+function countPackages(nodeModules: string): number {
   let count = 0
   for (const entry of readdirSync(nodeModules, { withFileTypes: true })) {
     if (!entry.isDirectory() || entry.name.startsWith('.')) continue
@@ -60,7 +60,7 @@ for (const [label, specs] of scenarios) {
 }
 rmSync(tarball, { force: true })
 
-const kb = (b) => `${(b / 1024).toFixed(0)} kB`
+const kb = (b: number) => `${(b / 1024).toFixed(0)} kB`
 console.log('| What you install | Packages | Size on disk |')
 console.log('| --- | ---: | ---: |')
 for (const r of rows) console.log(`| ${r.label} | ${r.packages} | ${kb(r.bytes)} |`)

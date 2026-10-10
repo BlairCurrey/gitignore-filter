@@ -5,7 +5,9 @@
 //   FUZZ_SEED=<seed printed in the failure> FUZZ_RUNS=1 pnpm test:only
 // To run more cases locally: FUZZ_RUNS=2000 pnpm test:only
 import { describe, it } from 'node:test'
-import { assertMatchesGit, makeTree, rng } from './helpers.mjs'
+import { assertMatchesGit, makeTree, rng, type Files } from './helpers.ts'
+
+type Rng = ReturnType<typeof rng>
 
 const RUNS = Number(process.env.FUZZ_RUNS ?? 300)
 const BASE_SEED = Number(process.env.FUZZ_SEED ?? 20261004)
@@ -13,7 +15,7 @@ const BASE_SEED = Number(process.env.FUZZ_SEED ?? 20261004)
 const DIR_NAMES = ['a', 'b', 'build', 'logs', 'src', 'node_modules', 'Docs']
 const FILE_NAMES = ['x.js', 'y.log', 'keep.log', 'Z.txt', '.env', 'b', 'temp', 'readme.md', 'ax.js', 'bx.js']
 const ATOMS = [...DIR_NAMES, ...FILE_NAMES, '*.js', '*.log', '*.txt', '*.md', '*', '?.js', '[ab]x.js', '[!a]x.js', '.*', 'Z.*']
-const DECORATED = (r, atom) => {
+const DECORATED = (r: Rng, atom: string): string => {
   switch (r.int(9)) {
     case 0: return `/${atom}`
     case 1: return `${atom}/`
@@ -26,7 +28,7 @@ const DECORATED = (r, atom) => {
   }
 }
 
-function randomPattern(r) {
+function randomPattern(r: Rng): string {
   let pattern = DECORATED(r, r.pick(ATOMS))
   if (r.chance(0.3)) pattern = `!${pattern}`
   if (r.chance(0.05)) pattern = `# ${pattern}`
@@ -34,13 +36,13 @@ function randomPattern(r) {
   return pattern
 }
 
-function randomTree(seed) {
+function randomTree(seed: number): Files {
   const r = rng(seed)
   const dirs = new Set([''])
-  const files = new Set()
-  const tree = {}
+  const files = new Set<string>()
+  const tree: Files = {}
 
-  const conflicts = (path) => {
+  const conflicts = (path: string) => {
     const parts = path.split('/')
     for (let i = 1; i < parts.length; i++) if (files.has(parts.slice(0, i).join('/'))) return true
     return dirs.has(path) || files.has(path)
@@ -95,7 +97,7 @@ describe(`randomized comparison against git (${RUNS} runs, base seed ${BASE_SEED
       try {
         assertMatchesGit(makeTree(tree), { label: `seed ${seed}:` })
       } catch (error) {
-        error.message += `\n\nReproduce with FUZZ_SEED=${seed} FUZZ_RUNS=1\nTree:\n${JSON.stringify(tree, null, 2)}`
+        if (error instanceof Error) error.message += `\n\nReproduce with FUZZ_SEED=${seed} FUZZ_RUNS=1\nTree:\n${JSON.stringify(tree, null, 2)}`
         throw error
       }
     }
