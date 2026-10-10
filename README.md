@@ -33,8 +33,6 @@ const files = await glob("**/*.ts", { cwd }); // gitignore: true by default, lik
 - **Write your own `.gitignore` handling**, which is harder than it looks (subfolder scoping, anchored patterns, re-includes, etc.).
 - **Drop the feature**, as several tools have, and let users trip over generated files, build output and secrets that suddenly show up.
 
-`gitignore-filter` is that missing piece and lets `tinyglobby` stay tiny ([tinyglobby#92](https://github.com/SuperchupuDev/tinyglobby/issues/92)).
-
 ## What does this add over the `ignore` package?
 
 [`ignore`](https://github.com/kaelzhang/node-ignore) is the rule engine: give it gitignore rules and it tells you whether a path matches them. This package uses it, and does everything around it that git does and `ignore` leaves to you:
