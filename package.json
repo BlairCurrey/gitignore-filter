@@ -14,10 +14,10 @@
     "e18e"
   ],
   "license": "MIT",
-  "author": "YOUR NAME",
+  "author": "Blair Currey",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/gitignore-filter.git"
+    "url": "git+https://github.com/BlairCurrey/gitignore-filter.git"
   },
   "type": "module",
   "sideEffects": false,
